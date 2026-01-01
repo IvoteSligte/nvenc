@@ -2,7 +2,14 @@
 name = "nvenc"
 version = "0.1.0"
 edition = "2024"
+authors = ["AlsoSylv"]
+description = "Wrapper for the nvidia NVENC API"
+rust-version = "1.85.1"
 readme = "README.md"
+repository = "https://github.com/AlsoSylv/nvenc"
+license = "MIT"
+keywords = ["nvidia", "graphics", "media", "video", "ffi"]
+categories = ["multimedia", "external-ffi-bindings"]
 
 [dependencies]
 libloading = "0.8.9"
