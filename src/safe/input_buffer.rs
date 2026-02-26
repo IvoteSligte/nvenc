@@ -54,7 +54,9 @@ impl Drop for InputBufferLock<'_> {
     fn drop(&mut self) {
         self.input_buffer
             .encoder
-            .unlock_input_buffer(self.lock_ptr)
+            // NVENC expects the original input buffer handle here, not the
+            // mapped CPU data pointer returned by lock_input_buffer.
+            .unlock_input_buffer(self.input_buffer.buffer)
             .unwrap();
     }
 }
