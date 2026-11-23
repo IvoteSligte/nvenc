@@ -1,8 +1,8 @@
 [package]
 name = "nvenc"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
-authors = ["AlsoSylv"]
+authors = ["AlsoSylv", "IvoteSligte"]
 description = "Wrapper for the nvidia NVENC API"
 rust-version = "1.85.1"
 readme = "README.md"
