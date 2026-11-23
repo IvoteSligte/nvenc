@@ -769,7 +769,7 @@ pub struct NVencLockBitStream {
     output_time_stamp: u64,
     pub output_duration: u64,
     pub bitstream_buffer: *mut c_void,
-    picture_type: NVencPicType,
+    pub picture_type: NVencPicType,
     picture_struct: NVencPicStruct,
     framge_avg_qp: u32,
     frame_satd: u32,

@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencParamsFrameFieldMode {
     Frame = 0x01,
@@ -5,6 +6,7 @@ pub enum NVencParamsFrameFieldMode {
     MBAFF = 0x03,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencParamsRcMode {
     ConstQP = 0x00,
@@ -12,6 +14,7 @@ pub enum NVencParamsRcMode {
     CBR = 0x02,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencMultiPass {
     Disabled = 0x00,
@@ -19,6 +22,7 @@ pub enum NVencMultiPass {
     TwoPassFullResolution = 0x02,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencStateRestoreType {
     Full = 0x01,
@@ -26,6 +30,7 @@ pub enum NVencStateRestoreType {
     Encode = 0x03,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencOutputStatsLevel {
     None = 0,
@@ -33,6 +38,7 @@ pub enum NVencOutputStatsLevel {
     RowLevel = 2,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencEmphasisMapLevel {
     Level0 = 0x0,
@@ -43,6 +49,7 @@ pub enum NVencEmphasisMapLevel {
     Level5 = 0x5,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencQPMapMode {
     Disabled = 0x0,
@@ -52,6 +59,7 @@ pub enum NVencQPMapMode {
     Map = 0x3,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencPicStruct {
     Frame = 0x01,
@@ -59,6 +67,7 @@ pub enum NVencPicStruct {
     FieldBottomTop = 0x03,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencDisplayPicStruct {
     Frame = 0x0,
@@ -68,6 +77,7 @@ pub enum NVencDisplayPicStruct {
     Tripling = 0x4,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencPicType {
     P = 0x00,
@@ -81,6 +91,7 @@ pub enum NVencPicType {
     UNKNOWN = 0xFF,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencMVPrecision {
     Default = 0x00,
@@ -89,6 +100,7 @@ pub enum NVencMVPrecision {
     QuarterPel = 0x03,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencBufferFormat {
     Undefined = 0x00000000,
@@ -108,12 +120,14 @@ pub enum NVencBufferFormat {
     P210 = 0x40000002,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NvencLevel {
     AutoSelect = 0,
 }
 
 // TODO: Translate level macro
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum H264Level {
     H264_1 = 10,
@@ -138,6 +152,7 @@ pub enum H264Level {
     H264_62 = 62,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum HEVCLevel {
     HEVC1 = 30,
@@ -157,6 +172,7 @@ pub enum HEVCLevel {
     HEVCHigh = 1,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum AV1Level {
     // Also AV1_0
@@ -188,6 +204,7 @@ pub enum AV1Level {
     AV1AutoSelect = 24,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencPicFlags {
     ForceIntra = 0x1,
@@ -198,6 +215,7 @@ pub enum NVencPicFlags {
     OuputReconFrame = 0x20,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencMemoryHeap {
     AutoSelect = 0,
@@ -206,6 +224,7 @@ pub enum NVencMemoryHeap {
     SystemUncached = 3,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencBFrameRefMode {
     Disabled = 0x0,
@@ -213,6 +232,7 @@ pub enum NVencBFrameRefMode {
     Middle = 0x2,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencH264EntropyCodingMode {
     AutoSelect = 0x0,
@@ -220,6 +240,7 @@ pub enum NVencH264EntropyCodingMode {
     Cavlc = 0x2,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencH264BDirectMode {
     Autoselect = 0x0,
@@ -228,6 +249,7 @@ pub enum NVencH264BDirectMode {
     Spatial = 0x3,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencH264FMOMode {
     AutoSelect = 0x0,
@@ -235,6 +257,7 @@ pub enum NVencH264FMOMode {
     Disable = 0x2,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencH264AdaptiveTransformMode {
     AutoSelect = 0x0,
@@ -242,6 +265,7 @@ pub enum NVencH264AdaptiveTransformMode {
     Enable = 0x2,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencStereoPackingMode {
     None = 0x0,
@@ -253,6 +277,7 @@ pub enum NVencStereoPackingMode {
     FrameSeq = 0x6,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencInputResourceType {
     DirectX = 0x0,
@@ -261,6 +286,7 @@ pub enum NVencInputResourceType {
     OpenGLTex = 0x3,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencBufferUsage {
     Image = 0x0,
@@ -269,14 +295,15 @@ pub enum NVencBufferUsage {
     OutputRecon = 0x4,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
-#[derive(Clone)]
 pub enum NVencDeviceType {
     DirectX = 0x0,
     Cuda = 0x1,
     OpenGL = 0x2,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencNumRefFrames {
     AutoSelect = 0x0,
@@ -289,12 +316,14 @@ pub enum NVencNumRefFrames {
     Frames7 = 0x7,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencTemporalFilterLevel {
     Level0 = 0,
     Level4 = 4,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencCaps {
     NumMaxBFrames,
@@ -357,6 +386,7 @@ pub enum NVencCaps {
     ExposedCount,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencHEVCCuSize {
     AutoSelect = 0,
@@ -366,6 +396,7 @@ pub enum NVencHEVCCuSize {
     Size64x64 = 4,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencAV1PartSize {
     AutoSelect = 0,
@@ -376,6 +407,7 @@ pub enum NVencAV1PartSize {
     Size64x64 = 5,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencVUIVideoFormat {
     Component = 0,
@@ -386,6 +418,7 @@ pub enum NVencVUIVideoFormat {
     Unspecified = 5,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencVUIColorPrimaries {
     Undefined = 0,
@@ -404,6 +437,7 @@ pub enum NVencVUIColorPrimaries {
     JEDECP22 = 22,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencVUITransCharacteristics {
     Undefined = 0,
@@ -426,6 +460,7 @@ pub enum NVencVUITransCharacteristics {
     AribStdB67 = 18,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencVUIMatrixCoeffs {
     RGB = 0,
@@ -442,6 +477,7 @@ pub enum NVencVUIMatrixCoeffs {
     SMPTE2085 = 11,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencLookAheadLevel {
     Level0 = 0,
@@ -451,6 +487,7 @@ pub enum NVencLookAheadLevel {
     AutoSelect = 15,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencBitDepth {
     Invalid = 0,
@@ -458,7 +495,7 @@ pub enum NVencBitDepth {
     Depth10 = 10,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencTuningInfo {
     Undefined = 0,
@@ -470,6 +507,7 @@ pub enum NVencTuningInfo {
     Count,
 }
 
+#[derive(Debug, Clone, Copy)]
 #[repr(C)]
 pub enum NVencSplitEncodeMode {
     Audo = 0,

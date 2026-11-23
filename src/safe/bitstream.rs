@@ -1,6 +1,9 @@
 use std::{ffi::c_void, sync::Arc};
 
-use crate::{safe::encoder::EncoderInternal, sys::result::NVencError};
+use crate::{
+    safe::encoder::EncoderInternal,
+    sys::{enums::NVencPicType, result::NVencError},
+};
 
 pub struct BitStream {
     pub(crate) buffer: *mut c_void,
@@ -26,6 +29,7 @@ impl BitStream {
             buffer: self,
             data_ptr: lock.bitstream_buffer,
             data_len: lock.bitstream_size_in_bytes,
+            picture_type: lock.picture_type,
         })
     }
 }
@@ -35,11 +39,16 @@ pub struct BitStreamLockGuard<'a> {
     buffer: &'a BitStream,
     data_ptr: *mut c_void,
     data_len: u32,
+    picture_type: NVencPicType,
 }
 
 impl BitStreamLockGuard<'_> {
     pub fn as_slice(&self) -> &[u8] {
         unsafe { std::slice::from_raw_parts(self.data_ptr as _, self.data_len as _) }
+    }
+
+    pub fn picture_type(&self) -> NVencPicType {
+        self.picture_type
     }
 }
 
