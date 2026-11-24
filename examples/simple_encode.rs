@@ -189,6 +189,7 @@ fn main() {
                     nvenc::sys::enums::NVencBufferFormat::ARGB,
                     nvenc::sys::enums::NVencPicStruct::Frame,
                     nvenc::sys::enums::NVencPicType::P,
+                    nvenc::sys::enums::NVencPicFlags::empty(),
                     None,
                 )
                 .unwrap();

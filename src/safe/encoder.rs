@@ -119,6 +119,7 @@ impl Encoder {
         format: NVencBufferFormat,
         pic_struct: NVencPicStruct,
         ty: NVencPicType,
+        flags: NVencPicFlags,
         codec_params: Option<CodecPicParams>,
     ) -> Result<(), NVencError> {
         self.encoder.encode_picture(
@@ -129,6 +130,7 @@ impl Encoder {
             format,
             pic_struct,
             ty,
+            flags,
             codec_params,
         )
     }
@@ -390,6 +392,7 @@ impl EncoderInternal {
         format: NVencBufferFormat,
         pic_struct: NVencPicStruct,
         ty: NVencPicType,
+        flags: NVencPicFlags,
         codec_params: Option<CodecPicParams>,
     ) -> Result<(), NVencError> {
         let mut params: MaybeUninit<NVencPicParams> = MaybeUninit::zeroed();
@@ -411,6 +414,7 @@ impl EncoderInternal {
         unsafe { &mut *params.as_mut_ptr() }.frame_idx = frame_count as u32;
         unsafe { &mut *params.as_mut_ptr() }.input_time_stamp = timestamp;
         unsafe { &mut *params.as_mut_ptr() }.codec_pic_params = sys_codec;
+        unsafe { &mut *params.as_mut_ptr() }.encode_pic_flags = flags;
         match unsafe {
             (self.function_list.nvenc_encode_picture)(self.encoder.as_ptr(), &raw mut params)
                 .into_error()
@@ -428,7 +432,7 @@ impl EncoderInternal {
     pub fn end_encode(&self) -> Result<(), NVencError> {
         let mut params: MaybeUninit<NVencPicParams> = MaybeUninit::zeroed();
         unsafe { &mut *params.as_mut_ptr() }.version = NV_ENC_PIC_PARAMS_VER;
-        unsafe { &mut *params.as_mut_ptr() }.encode_pic_flags = NVencPicFlags::Eos as u32;
+        unsafe { &mut *params.as_mut_ptr() }.encode_pic_flags = NVencPicFlags::EOS;
         unsafe {
             (self.function_list.nvenc_encode_picture)(self.encoder.as_ptr(), &raw mut params)
                 .into_error()

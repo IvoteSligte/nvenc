@@ -204,15 +204,17 @@ pub enum AV1Level {
     AV1AutoSelect = 24,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(C)]
-pub enum NVencPicFlags {
-    ForceIntra = 0x1,
-    ForceIDR = 0x2,
-    OutputSpspps = 0x4,
-    Eos = 0x8,
-    DisableEncStateAdvance = 0x10,
-    OuputReconFrame = 0x20,
+bitflags::bitflags! {
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    #[repr(C)]
+    pub struct NVencPicFlags: u32 {
+        const FORCE_INTRA = 0x1;
+        const FORCE_IDR = 0x2;
+        const OUTPUT_SPSPPS = 0x4;
+        const EOS = 0x8;
+        const DISABLE_ENC_STATE_ADVANCE = 0x10;
+        const OUTPUT_RECON_FRAME = 0x20;
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -14,6 +14,8 @@ use crate::sys::{
     version::struct_version,
 };
 
+use super::enums::NVencPicFlags;
+
 #[derive(Default, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct Guid {
@@ -692,7 +694,7 @@ pub struct NVencPicParams {
     pub input_width: u32,
     pub input_height: u32,
     pub input_pitch: u32,
-    pub encode_pic_flags: u32,
+    pub encode_pic_flags: NVencPicFlags,
     pub frame_idx: u32,
     pub input_time_stamp: u64,
     input_duration: u64,
