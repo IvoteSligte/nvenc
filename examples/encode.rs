@@ -53,13 +53,16 @@ pub fn setup() -> ID3D11Device {
 }
 
 fn image(device: &ID3D11Device) -> ID3D11Texture2D {
-    let data: [u8; 1920 * 1080 * 4] = std::array::from_fn(|idx| match idx % 4 {
-        0 => 255,
-        1 => 0,
-        2 => 0,
-        3 => 255,
-        _ => unreachable!(),
-    });
+    let data = (0..)
+        .map(|idx| match idx % 4 {
+            0 => 255,
+            1 => 0,
+            2 => 0,
+            3 => 255,
+            _ => unreachable!(),
+        })
+        .take(1920 * 1080 * 4)
+        .collect::<Vec<u8>>();
 
     let mut texture = None;
     let desc = windows::Win32::Graphics::Direct3D11::D3D11_TEXTURE2D_DESC {
