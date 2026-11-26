@@ -186,7 +186,7 @@ impl Encoder {
 
         let bitstream = self.encoder.create_bitstream_buffer()?;
         unsafe {
-            let event = CreateEventA(None, true, true, None)?;
+            let event = CreateEventA(None, false, false, None)?;
             self.encoder.register_async_event(event)?;
             Ok(AsyncBitStream { bitstream, event })
         }

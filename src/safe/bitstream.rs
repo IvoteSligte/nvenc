@@ -73,10 +73,11 @@ impl<'a> Drop for BitStreamLockGuard<'a> {
     }
 }
 
+// NOTE: events and bitstreams *must* be destroyed before the encoder is destroyed
 #[cfg(windows)]
 pub struct AsyncBitStream {
-    pub(crate) bitstream: BitStream,
     pub(crate) event: HANDLE,
+    pub(crate) bitstream: BitStream,
 }
 
 #[cfg(windows)]

@@ -146,8 +146,8 @@ fn main() {
     };
 
     println!("FPS: 30");
-    println!("Len: 600 frames");
-    println!("Expected time: {}", 600 / 30);
+    println!("Length: 600 frames");
+    println!("Expected duration: {}s", 600 / 30);
     println!("Codec: H264");
     println!("Tuning Info {:?}:", init_params.tuning_info);
 
