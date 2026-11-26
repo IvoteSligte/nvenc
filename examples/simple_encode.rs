@@ -52,7 +52,7 @@ pub fn setup() -> ID3D11Device {
 
 #[cfg(windows)]
 fn image(device: &ID3D11Device) -> ID3D11Texture2D {
-    let data: [u8; 1920 * 4] = std::array::from_fn(|idx| match idx % 4 {
+    let data: [u8; 1920 * 1080 * 4] = std::array::from_fn(|idx| match idx % 4 {
         0 => 255,
         1 => 0,
         2 => 0,
