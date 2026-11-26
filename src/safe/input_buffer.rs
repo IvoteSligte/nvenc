@@ -11,7 +11,7 @@ pub struct InputBuffer {
 
 impl InputBuffer {
     pub fn lock(&self) -> Result<InputBufferLock<'_>, NVencError> {
-        let (lock_ptr, pitch) = self.encoder.lock_input_buffer(self.buffer)?;
+        let (lock_ptr, pitch) = unsafe { self.encoder.lock_input_buffer(self.buffer)? };
         Ok(InputBufferLock {
             input_buffer: self,
             lock_ptr,
@@ -22,7 +22,9 @@ impl InputBuffer {
 
 impl Drop for InputBuffer {
     fn drop(&mut self) {
-        self.encoder.destroy_input_buffer(self.buffer).unwrap()
+        unsafe {
+            self.encoder.destroy_input_buffer(self.buffer).unwrap();
+        }
     }
 }
 
@@ -52,11 +54,13 @@ impl InputBufferLock<'_> {
 
 impl Drop for InputBufferLock<'_> {
     fn drop(&mut self) {
-        self.input_buffer
-            .encoder
-            // NVENC expects the original input buffer handle here, not the
-            // mapped CPU data pointer returned by lock_input_buffer.
-            .unlock_input_buffer(self.input_buffer.buffer)
-            .unwrap();
+        unsafe {
+            self.input_buffer
+                .encoder
+                // NVENC expects the original input buffer handle here, not the
+                // mapped CPU data pointer returned by lock_input_buffer.
+                .unlock_input_buffer(self.input_buffer.buffer)
+                .unwrap();
+        }
     }
 }

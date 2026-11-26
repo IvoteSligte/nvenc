@@ -700,8 +700,7 @@ pub struct NVencPicParams {
     input_duration: u64,
     pub input_buffer: *mut c_void,
     pub output_bitstream: *mut c_void,
-    // TODO: Windows only, needed for async
-    completion_event: *mut c_void,
+    pub completion_event: *mut c_void,
     pub buffer_format: NVencBufferFormat,
     pub picture_struct: NVencPicStruct,
     pub picture_type: NVencPicType,
@@ -923,9 +922,9 @@ pub const NV_ENC_SEQUENCE_PARAM_PAYLOAD_VER: u32 = struct_version(1);
 
 #[repr(C)]
 pub struct NVencEventParams {
-    version: u32,
+    pub version: u32,
     rsvd: u32,
-    completion_event: *mut c_void,
+    pub completion_event: *mut c_void,
     rsvd1: [u32; 254],
     rsvd2: [*mut c_void; 64],
 }

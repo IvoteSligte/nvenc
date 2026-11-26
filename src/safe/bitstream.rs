@@ -1,5 +1,13 @@
 use std::{ffi::c_void, sync::Arc};
 
+#[cfg(windows)]
+use windows::Win32::{
+    Foundation::{CloseHandle, GetLastError, HANDLE, WAIT_OBJECT_0},
+    System::Threading::*,
+};
+
+#[cfg(windows)]
+use crate::AsyncNVencError;
 use crate::{
     safe::encoder::EncoderInternal,
     sys::{enums::NVencPicType, result::NVencError},
@@ -13,7 +21,9 @@ pub struct BitStream {
 impl Drop for BitStream {
     fn drop(&mut self) {
         println!("Dropping bitstream buffer");
-        self.encoder.destroy_bitstream_buffer(self.buffer).unwrap();
+        unsafe {
+            self.encoder.destroy_bitstream_buffer(self.buffer).unwrap();
+        }
     }
 }
 
@@ -24,7 +34,7 @@ impl BitStream {
     /// otherwise a `LockBusy` Error may be returned, in which case the
     /// client should retry in a few milliseconds
     pub fn try_lock(&self, wait: bool) -> Result<BitStreamLockGuard<'_>, NVencError> {
-        let lock = self.encoder.lock_bit_stream_buffer(self.buffer, wait)?;
+        let lock = unsafe { self.encoder.lock_bit_stream_buffer(self.buffer, wait)? };
         Ok(BitStreamLockGuard {
             buffer: self,
             data_ptr: lock.bitstream_buffer,
@@ -54,9 +64,47 @@ impl BitStreamLockGuard<'_> {
 
 impl<'a> Drop for BitStreamLockGuard<'a> {
     fn drop(&mut self) {
-        self.buffer
-            .encoder
-            .unlock_bit_stream_buffer(self.buffer.buffer)
-            .unwrap();
+        unsafe {
+            self.buffer
+                .encoder
+                .unlock_bit_stream_buffer(self.buffer.buffer)
+                .unwrap();
+        }
     }
 }
+
+#[cfg(windows)]
+pub struct AsyncBitStream {
+    pub(crate) bitstream: BitStream,
+    pub(crate) event: HANDLE,
+}
+
+#[cfg(windows)]
+impl AsyncBitStream {
+    pub fn try_lock(&self) -> Result<BitStreamLockGuard<'_>, AsyncNVencError> {
+        unsafe {
+            let result = WaitForSingleObject(self.event, INFINITE);
+            if result != WAIT_OBJECT_0 {
+                // Error occurred
+                return Err(GetLastError().into());
+            }
+        }
+        Ok(self.bitstream.try_lock(false)?)
+    }
+}
+
+#[cfg(windows)]
+impl Drop for AsyncBitStream {
+    fn drop(&mut self) {
+        unsafe {
+            self.bitstream
+                .encoder
+                .unregister_async_event(self.event)
+                .unwrap();
+            CloseHandle(self.event).unwrap();
+        }
+    }
+}
+
+#[cfg(windows)]
+unsafe impl Send for AsyncBitStream {}

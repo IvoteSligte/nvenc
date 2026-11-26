@@ -1,3 +1,7 @@
+//! This example only works on windows.
+
+#![cfg(windows)]
+
 use std::fs::File;
 use std::io::Write;
 use std::time::Instant;
@@ -8,10 +12,8 @@ use nvenc::{
     session::Session,
     sys::guids::{NV_ENC_CODEC_H264_GUID, NV_ENC_PRESET_P3_GUID},
 };
-#[cfg(windows)]
 use windows::Win32::Graphics::Direct3D11::{ID3D11Device, ID3D11Texture2D};
 
-#[cfg(windows)]
 pub fn setup() -> ID3D11Device {
     let dxgi_factory: windows::Win32::Graphics::Dxgi::IDXGIFactory =
         unsafe { windows::Win32::Graphics::Dxgi::CreateDXGIFactory() }.unwrap();
@@ -50,7 +52,6 @@ pub fn setup() -> ID3D11Device {
     device
 }
 
-#[cfg(windows)]
 fn image(device: &ID3D11Device) -> ID3D11Texture2D {
     let data: [u8; 1920 * 1080 * 4] = std::array::from_fn(|idx| match idx % 4 {
         0 => 255,
@@ -95,9 +96,6 @@ fn image(device: &ID3D11Device) -> ID3D11Texture2D {
 fn main() {
     let device = setup();
 
-    #[cfg(target_os = "linux")]
-    compile_error!("Linux is currently unsupported in this example");
-    #[cfg(windows)]
     let session: Session<nvenc::session::NeedsConfig> = Session::open_dx(&device).unwrap();
     assert!(
         session
@@ -138,6 +136,9 @@ fn main() {
         frame_rate: [30, 1],
         resolution: [1920, 1080],
         enable_ptd: true,
+        // This is a sync-mode example.
+        // Async-mode is only supported on Windows.
+        enable_async: false,
         max_encoder_resolution: [0, 0],
     };
 

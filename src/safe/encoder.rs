@@ -5,9 +5,13 @@ use std::sync::Arc;
 use std::{mem::MaybeUninit, ptr::NonNull};
 
 #[cfg(windows)]
-use windows::Win32::Graphics::Direct3D11::ID3D11Texture2D;
+use windows::Win32::{Foundation::HANDLE, Graphics::Direct3D11::ID3D11Texture2D};
 
+#[cfg(windows)]
+use crate::AsyncNVencError;
 use crate::input_buffer::InputBuffer;
+#[cfg(windows)]
+use crate::safe::bitstream::AsyncBitStream;
 use crate::safe::bitstream::BitStream;
 use crate::sys::enums::{
     NVencBufferFormat, NVencBufferUsage, NVencInputResourceType, NVencMemoryHeap, NVencPicStruct,
@@ -17,6 +21,8 @@ use crate::sys::structs::{
     Guid, NV_ENC_CREATE_INPUT_BUFFER_VER, NV_ENC_LOCK_INPUT_BUFFER_VER, NVencCodecPicParams,
     NVencCreateInputBuffer, NVencLockInputBuffer, NVencPicParamsH264, NVencRegisterResource,
 };
+#[cfg(windows)]
+use crate::sys::structs::{NV_ENC_EVENT_PARAMS_VER, NVencEventParams};
 use crate::sys::{
     enums::{NVencPicFlags, NVencTuningInfo},
     function_table::NVencFunctionList,
@@ -79,6 +85,35 @@ impl EncoderInput for InputBuffer {
     }
 }
 
+pub trait EncoderOutput {
+    fn bitstream(&self) -> &BitStream;
+
+    #[cfg(windows)]
+    fn async_event(&self) -> Option<*mut c_void>;
+}
+
+impl EncoderOutput for BitStream {
+    fn bitstream(&self) -> &BitStream {
+        self
+    }
+
+    #[cfg(windows)]
+    fn async_event(&self) -> Option<*mut c_void> {
+        None
+    }
+}
+
+#[cfg(windows)]
+impl EncoderOutput for AsyncBitStream {
+    fn bitstream(&self) -> &BitStream {
+        &self.bitstream
+    }
+
+    fn async_event(&self) -> Option<*mut c_void> {
+        Some(self.event.0)
+    }
+}
+
 impl Encoder {
     #[cfg(windows)]
     /// Registers a DX11 texture as an nvenc input resource
@@ -110,10 +145,10 @@ impl Encoder {
     }
 
     /// Takes an encoder inout, and outputs a bit stream that can be read back
-    pub fn encode_picture<I: EncoderInput>(
+    pub fn encode_picture<I: EncoderInput, O: EncoderOutput>(
         &self,
         input: &I,
-        output: &BitStream,
+        output: &O,
         frame_count: usize,
         timestamp: u64,
         format: NVencBufferFormat,
@@ -143,6 +178,18 @@ impl Encoder {
     /// Creates a bitstream bfufer that can be used for output storage
     pub fn create_bitstream_buffer(&self) -> Result<BitStream, NVencError> {
         self.encoder.create_bitstream_buffer()
+    }
+
+    #[cfg(windows)]
+    pub fn create_async_bitstream_buffer(&self) -> Result<AsyncBitStream, AsyncNVencError> {
+        use windows::Win32::System::Threading::*;
+
+        let bitstream = self.encoder.create_bitstream_buffer()?;
+        unsafe {
+            let event = CreateEventA(None, true, true, None)?;
+            self.encoder.register_async_event(event)?;
+            Ok(AsyncBitStream { bitstream, event })
+        }
     }
 
     pub fn create_input_buffer(
@@ -352,12 +399,15 @@ impl EncoderInternal {
         Ok(input.input_buffer)
     }
 
-    pub fn destroy_input_buffer(&self, buffer: *mut c_void) -> Result<(), NVencError> {
+    pub unsafe fn destroy_input_buffer(&self, buffer: *mut c_void) -> Result<(), NVencError> {
         unsafe { (self.function_list.nvenc_destroy_input_buffer)(self.encoder.as_ptr(), buffer) }
             .into_error()
     }
 
-    pub fn lock_input_buffer(&self, buffer: *mut c_void) -> Result<(*mut c_void, u32), NVencError> {
+    pub unsafe fn lock_input_buffer(
+        &self,
+        buffer: *mut c_void,
+    ) -> Result<(*mut c_void, u32), NVencError> {
         let mut lock = NVencLockInputBuffer {
             version: NV_ENC_LOCK_INPUT_BUFFER_VER,
             bitflags: 0,
@@ -376,17 +426,17 @@ impl EncoderInternal {
         Ok((lock.buffer_data_ptr, lock.pitch))
     }
 
-    pub fn unlock_input_buffer(&self, locked_buffer: *mut c_void) -> Result<(), NVencError> {
+    pub unsafe fn unlock_input_buffer(&self, locked_buffer: *mut c_void) -> Result<(), NVencError> {
         unsafe {
             (self.function_list.nvenc_unlock_input_buffer)(self.encoder.as_ptr(), locked_buffer)
                 .into_error()
         }
     }
 
-    pub fn encode_picture<I: EncoderInput>(
+    pub fn encode_picture<I: EncoderInput, O: EncoderOutput>(
         &self,
         input: &I,
-        output: &BitStream,
+        output: &O,
         frame_count: usize,
         timestamp: u64,
         format: NVencBufferFormat,
@@ -402,19 +452,26 @@ impl EncoderInternal {
                 h264_pic_params: ManuallyDrop::new(codec),
             },
         };
-        unsafe { &mut *params.as_mut_ptr() }.version = NV_ENC_PIC_PARAMS_VER;
-        unsafe { &mut *params.as_mut_ptr() }.input_width = input.width();
-        unsafe { &mut *params.as_mut_ptr() }.input_height = input.height();
-        unsafe { &mut *params.as_mut_ptr() }.input_pitch = input.pitch();
-        unsafe { &mut *params.as_mut_ptr() }.output_bitstream = output.buffer;
-        unsafe { &mut *params.as_mut_ptr() }.input_buffer = input.as_ptr();
-        unsafe { &mut *params.as_mut_ptr() }.buffer_format = format;
-        unsafe { &mut *params.as_mut_ptr() }.picture_struct = pic_struct;
-        unsafe { &mut *params.as_mut_ptr() }.picture_type = ty;
-        unsafe { &mut *params.as_mut_ptr() }.frame_idx = frame_count as u32;
-        unsafe { &mut *params.as_mut_ptr() }.input_time_stamp = timestamp;
-        unsafe { &mut *params.as_mut_ptr() }.codec_pic_params = sys_codec;
-        unsafe { &mut *params.as_mut_ptr() }.encode_pic_flags = flags;
+        unsafe {
+            let p = params.assume_init_mut();
+            p.version = NV_ENC_PIC_PARAMS_VER;
+            p.input_width = input.width();
+            p.input_height = input.height();
+            p.input_pitch = input.pitch();
+            p.output_bitstream = output.bitstream().buffer;
+            #[cfg(windows)]
+            if let Some(event) = output.async_event() {
+                p.completion_event = event;
+            }
+            p.input_buffer = input.as_ptr();
+            p.buffer_format = format;
+            p.picture_struct = pic_struct;
+            p.picture_type = ty;
+            p.frame_idx = frame_count as u32;
+            p.input_time_stamp = timestamp;
+            p.codec_pic_params = sys_codec;
+            p.encode_pic_flags = flags;
+        }
         match unsafe {
             (self.function_list.nvenc_encode_picture)(self.encoder.as_ptr(), &raw mut params)
                 .into_error()
@@ -440,7 +497,7 @@ impl EncoderInternal {
         Ok(())
     }
 
-    pub(crate) fn lock_bit_stream_buffer(
+    pub(crate) unsafe fn lock_bit_stream_buffer(
         &self,
         buffer: *mut c_void,
         wait: bool,
@@ -456,7 +513,10 @@ impl EncoderInternal {
         Ok(unsafe { lock.assume_init() })
     }
 
-    pub(crate) fn unlock_bit_stream_buffer(&self, buffer: *mut c_void) -> Result<(), NVencError> {
+    pub(crate) unsafe fn unlock_bit_stream_buffer(
+        &self,
+        buffer: *mut c_void,
+    ) -> Result<(), NVencError> {
         unsafe { (self.function_list.nvenc_unlock_bit_stream)(self.encoder.as_ptr(), buffer) }
             .into_error()
     }
@@ -477,11 +537,40 @@ impl EncoderInternal {
         })
     }
 
-    pub(crate) fn destroy_bitstream_buffer(&self, buffer: *mut c_void) -> Result<(), NVencError> {
+    pub(crate) unsafe fn destroy_bitstream_buffer(
+        &self,
+        buffer: *mut c_void,
+    ) -> Result<(), NVencError> {
         unsafe {
-            (self.function_list.nvenc_destory_bit_stream_buffer)(self.encoder.as_ptr(), buffer)
+            (self.function_list.nvenc_destroy_bit_stream_buffer)(self.encoder.as_ptr(), buffer)
         }
         .into_error()
+    }
+
+    #[cfg(windows)]
+    unsafe fn register_async_event(self: &Arc<Self>, event: HANDLE) -> Result<(), NVencError> {
+        unsafe {
+            let mut params: NVencEventParams = std::mem::zeroed();
+            params.version = NV_ENC_EVENT_PARAMS_VER;
+            params.completion_event = event.0;
+            (self.function_list.nvenc_register_async_event)(self.encoder.as_ptr(), &raw mut params)
+                .into_error()?;
+            Ok(())
+        }
+    }
+
+    #[cfg(windows)]
+    pub(crate) unsafe fn unregister_async_event(&self, event: HANDLE) -> Result<(), NVencError> {
+        unsafe {
+            let mut params: NVencEventParams = std::mem::zeroed();
+            params.version = NV_ENC_EVENT_PARAMS_VER;
+            params.completion_event = event.0;
+            (self.function_list.nvenc_unregister_async_event)(
+                self.encoder.as_ptr(),
+                &raw mut params,
+            )
+            .into_error()
+        }
     }
 }
 

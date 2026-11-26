@@ -14,6 +14,8 @@ use crate::{
     },
 };
 
+use super::structs::NVencEventParams;
+
 #[repr(C)]
 #[derive(Clone)]
 pub struct NVencFunctionList {
@@ -35,7 +37,7 @@ pub struct NVencFunctionList {
     pub nvenc_create_input_buffer: NvencCreateInputBuffer,
     pub nvenc_destroy_input_buffer: NvencDestroyInputBuffer,
     pub nvenc_create_bit_stream_buffer: NvencCreateBitStreamBuffer,
-    pub nvenc_destory_bit_stream_buffer: NvencDestroyBitStreamBuffer,
+    pub nvenc_destroy_bit_stream_buffer: NvencDestroyBitStreamBuffer,
     pub nvenc_encode_picture: NvencEncodePicture,
     pub nvenc_lock_bit_stream: NvencLockBitStream,
     pub nvenc_unlock_bit_stream: NvencUnlockBitStream,
@@ -43,8 +45,8 @@ pub struct NVencFunctionList {
     pub nvenc_unlock_input_buffer: NvencUnlockInputBuffer,
     nvenc_get_encode_stats: NvencGetEncodeStats,
     nvenc_get_sequence_params: NvencGetSequenceParams,
-    nvenc_register_async_event: NvencRegisterAsyncEvent,
-    nvenc_unregister_async_event: NvencUnregisterAsyncEvent,
+    pub nvenc_register_async_event: NvencRegisterAsyncEvent,
+    pub nvenc_unregister_async_event: NvencUnregisterAsyncEvent,
     pub nvenc_map_input_resource: NvencMapInputResource,
     pub nvenc_unmap_input_resource: NvencUnmapInputResource,
     pub nvenc_destroy_encoder: NvencDestroyEncoder,
@@ -182,8 +184,10 @@ type NvencUnlockInputBuffer =
     stdcall!(fn(encoder: *mut c_void, input_buffer: *mut c_void) -> NVencResult);
 type NvencGetEncodeStats = stdcall!(fn(encoder: *mut c_void) -> NVencResult);
 type NvencGetSequenceParams = stdcall!(fn(encoder: *mut c_void) -> NVencResult);
-type NvencRegisterAsyncEvent = stdcall!(fn(encoder: *mut c_void) -> NVencResult);
-type NvencUnregisterAsyncEvent = stdcall!(fn(encoder: *mut c_void) -> NVencResult);
+type NvencRegisterAsyncEvent =
+    stdcall!(fn(encoder: *mut c_void, event_params: *mut NVencEventParams) -> NVencResult);
+type NvencUnregisterAsyncEvent =
+    stdcall!(fn(encoder: *mut c_void, event_params: *mut NVencEventParams) -> NVencResult);
 type NvencMapInputResource = stdcall!(
     fn(encoder: *mut c_void, map_input_resource_params: *mut NVencMapInputResource) -> NVencResult
 );

@@ -154,6 +154,8 @@ pub struct InitParams<'a> {
     pub buffer_format: NVencBufferFormat,
     pub encode_config: &'a mut NVencConfig,
     pub enable_ptd: bool,
+    #[cfg(windows)]
+    pub enable_async: bool,
     pub max_encoder_resolution: [u32; 2],
     // TODO: Support for async encoding and bit fields
 }
@@ -175,6 +177,9 @@ impl Session<NeedsInit> {
             encode_config: init_params.encode_config as _,
             enable_ptd: init_params.enable_ptd as u32,
             version: NV_ENC_INITIALIZE_PARAMS_VER,
+            #[cfg(windows)]
+            enable_encode_async: init_params.enable_async as _,
+            #[cfg(not(windows))]
             enable_encode_async: 0,
             bit_flags: crate::sys::structs::NVencInitializeParamsBitfields::new(),
             priv_data_size: 0,
