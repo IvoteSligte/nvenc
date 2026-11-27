@@ -7,7 +7,7 @@ use windows::Win32::{
 };
 
 #[cfg(windows)]
-use crate::AsyncNVencError;
+use crate::sys::result::AsyncNVencError;
 use crate::{
     safe::encoder::EncoderInternal,
     sys::{enums::NVencPicType, result::NVencError},

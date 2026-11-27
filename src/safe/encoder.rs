@@ -7,8 +7,6 @@ use std::{mem::MaybeUninit, ptr::NonNull};
 #[cfg(windows)]
 use windows::Win32::{Foundation::HANDLE, Graphics::Direct3D11::ID3D11Texture2D};
 
-#[cfg(windows)]
-use crate::AsyncNVencError;
 use crate::input_buffer::InputBuffer;
 #[cfg(windows)]
 use crate::safe::bitstream::AsyncBitStream;
@@ -17,6 +15,8 @@ use crate::sys::enums::{
     NVencBufferFormat, NVencBufferUsage, NVencInputResourceType, NVencMemoryHeap, NVencPicStruct,
     NVencPicType,
 };
+#[cfg(windows)]
+use crate::sys::result::AsyncNVencError;
 use crate::sys::structs::{
     Guid, NV_ENC_CREATE_INPUT_BUFFER_VER, NV_ENC_LOCK_INPUT_BUFFER_VER, NVencCodecPicParams,
     NVencCreateInputBuffer, NVencLockInputBuffer, NVencPicParamsH264, NVencRegisterResource,

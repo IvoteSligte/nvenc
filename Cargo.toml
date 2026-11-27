@@ -1,6 +1,6 @@
 [package]
 name = "nvenc"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 authors = ["AlsoSylv", "IvoteSligte"]
 description = "Wrapper for the nvidia NVENC API"
