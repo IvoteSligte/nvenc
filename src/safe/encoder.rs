@@ -40,6 +40,10 @@ pub struct Encoder {
     pub(crate) marker: PhantomData<*mut ()>,
 }
 
+// NOTE: The original author did not have this impl, but I do not see why it can't have it.
+// Not adding Sync in case that breaks something, though. !Send tends to be the more annoying restriction.
+unsafe impl Send for Encoder {}
+
 pub trait EncoderInput {
     #[doc(hidden)]
     fn as_ptr(&self) -> *mut c_void;
